@@ -107,7 +107,7 @@ impl<R: Router> SplitEngine<R> for StreamEngine {
         let outcome = (|| -> Result<(), EngineError> {
             while let Some(record) = input.next_record()? {
                 records += 1;
-                if records % INTERRUPT_CHECK_INTERVAL == 0 {
+                if records.is_multiple_of(INTERRUPT_CHECK_INTERVAL) {
                     check_interrupt(context.interrupt, records)?;
                 }
 

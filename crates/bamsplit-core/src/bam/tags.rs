@@ -614,7 +614,7 @@ impl<'a> TagReader<'a> {
 }
 
 fn validate_hex(tag: Tag, payload: &[u8]) -> Result<(), TagError> {
-    if payload.len() % 2 != 0 {
+    if !payload.len().is_multiple_of(2) {
         return Err(TagError::MalformedHex {
             tag: render_tag(tag),
             reason: "an `H` value must contain an even number of hex digits",

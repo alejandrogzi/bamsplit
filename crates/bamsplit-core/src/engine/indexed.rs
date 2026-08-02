@@ -599,7 +599,7 @@ fn run_task<R: Router>(
                     break;
                 };
                 records += 1;
-                if records % INTERRUPT_CHECK_INTERVAL == 0 {
+                if records.is_multiple_of(INTERRUPT_CHECK_INTERVAL) {
                     check_interrupt(context.interrupt, records)?;
                 }
                 // Chunks are conservative, so a record from a neighbouring
@@ -693,7 +693,7 @@ fn run_unplaced<R: Router>(
     let outcome = (|| -> Result<(), EngineError> {
         while let Some(record) = reader.read_record().map_err(Box::new)? {
             records += 1;
-            if records % INTERRUPT_CHECK_INTERVAL == 0 {
+            if records.is_multiple_of(INTERRUPT_CHECK_INTERVAL) {
                 check_interrupt(context.interrupt, records)?;
             }
             if record.reference_sequence_id().map_err(Box::new)?.is_some() {

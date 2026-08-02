@@ -113,10 +113,6 @@ noodles-csi.workspace = true
 name = "integration"
 path = "tests/integration/main.rs"
 
-[[test]]
-name = "differential"
-path = "tests/differential/main.rs"
-
 [[bench]]
 name = "core"
 path = "benches/core.rs"

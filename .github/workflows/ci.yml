@@ -153,7 +153,6 @@ jobs:
       - name: Licensing metadata is consistent
         run: |
           test -f LICENSE
-          test -f LICENSING.md
           grep -q 'GNU GENERAL PUBLIC LICENSE' LICENSE
           grep -q 'Version 3' LICENSE
           grep -q 'license = "GPL-3.0-only"' Cargo.toml

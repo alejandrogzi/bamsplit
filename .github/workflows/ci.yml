@@ -1,0 +1,205 @@
+# Copyright (c) 2025 Alejandro Gonzales-Irribarren <alejandrxgzi@gmail.com>
+# Distributed under the terms of the Apache License, Version 2.0.
+
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  # A backtrace on a CI failure costs nothing and saves a round trip.
+  RUST_BACKTRACE: 1
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    name: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt --all --check
+
+  lint:
+    name: Linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+  build:
+    name: Debug build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --workspace --all-targets --all-features --locked
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Unit and integration tests
+        run: cargo test --workspace --all-features --locked
+      - name: Documentation tests
+        run: cargo test --doc --workspace --all-features --locked
+
+  features:
+    name: Feature combinations
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The core crate's features gate optional subsystems, so each
+        # combination has to compile and pass on its own — a feature that only
+        # builds when another is enabled is a latent breakage for anyone who
+        # depends on the library.
+        features:
+          - "--no-default-features"
+          - "--no-default-features --features mmap"
+          - "--no-default-features --features annotation"
+          - ""
+          - "--all-features"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build -p bamsplit-core ${{ matrix.features }} --locked
+      - run: cargo test -p bamsplit-core ${{ matrix.features }} --locked
+
+  release:
+    name: Release build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --workspace --all-features --release --locked
+      - name: Smoke-test the binary
+        run: |
+          ./target/release/bamsplit --version
+          ./target/release/bamsplit --help
+          ./target/release/bamsplit chrom --help
+
+  msrv:
+    name: Minimum supported Rust version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read rust-version from the workspace manifest
+        id: msrv
+        run: |
+          version=$(grep -m1 '^rust-version' Cargo.toml | cut -d'"' -f2)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ steps.msrv.outputs.version }}
+      - uses: Swatinem/rust-cache@v2
+      # Build and core unit tests only: the full suite is the stable job's
+      # responsibility, and running it twice buys little.
+      - run: cargo build --workspace --all-features --locked
+      - run: cargo test -p bamsplit-core --all-features --locked
+
+  differential:
+    name: Differential tests against samtools
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Install samtools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y samtools
+          samtools --version
+      - name: Differential suite
+        run: cargo test --workspace --features differential --locked -- --nocapture
+      - name: End-to-end differential script
+        run: |
+          cargo build --release --locked
+          cargo run --release --bin bamsplit-generate-fixtures -- "$RUNNER_TEMP/fixtures"
+          # The script needs a coordinate-sorted, indexable input.
+          samtools index "$RUNNER_TEMP/fixtures/coordinate-sorted.bam"
+          scripts/differential-test.sh "$RUNNER_TEMP/fixtures/coordinate-sorted.bam" 2
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build the API documentation
+        env:
+          # A broken intra-doc link is a broken promise to a reader.
+          RUSTDOCFLAGS: "-D warnings"
+        run: cargo doc --workspace --all-features --no-deps
+
+  audit:
+    name: Source audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Every hand-written Rust module carries the watermark
+        run: |
+          # Hand-written sources only: never generated code or vendored crates.
+          rust_files() { git ls-files '*.rs' | grep -v '^target/'; }
+          missing=0
+          while IFS= read -r file; do
+            if ! head -2 "$file" | grep -q 'Copyright (c) 2025 Alejandro Gonzales-Irribarren'; then
+              echo "missing watermark: $file"
+              missing=$((missing + 1))
+            fi
+          done < <(rust_files)
+          if [ "$missing" -gt 0 ]; then
+            echo "$missing file(s) lack the required source watermark"
+            exit 1
+          fi
+          echo "all $(rust_files | wc -l) Rust files carry the watermark"
+      - name: Licensing metadata is consistent
+        run: |
+          test -f LICENSE
+          test -f LICENSING.md
+          grep -q 'GNU GENERAL PUBLIC LICENSE' LICENSE
+          grep -q 'Version 3' LICENSE
+          grep -q 'license = "GPL-3.0-only"' Cargo.toml
+          for manifest in crates/*/Cargo.toml; do
+            grep -q 'license.workspace = true' "$manifest" || {
+              echo "$manifest does not inherit the workspace license"
+              exit 1
+            }
+          done
+          echo "GPL-3.0-only metadata is consistent"
+      - name: Every unsafe block is justified
+        run: |
+          rust_files() { git ls-files '*.rs' | grep -v '^target/'; }
+          # `deny(unsafe_code)` covers the compiler side; this covers the
+          # documentation side, which the compiler cannot check.
+          unjustified=0
+          while IFS= read -r hit; do
+            file=${hit%%:*}
+            line=${hit#*:}; line=${line%%:*}
+            start=$((line > 12 ? line - 12 : 1))
+            if ! sed -n "${start},${line}p" "$file" | grep -q 'SAFETY:'; then
+              echo "unsafe without a SAFETY comment: $file:$line"
+              unjustified=$((unjustified + 1))
+            fi
+          done < <(rust_files | xargs grep -n '\bunsafe\b *{' || true)
+          test "$unjustified" -eq 0
+          echo "every unsafe block is documented"

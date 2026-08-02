@@ -1,0 +1,55 @@
+[package]
+name = "bamsplit-fuzz"
+version = "0.0.0"
+edition = "2024"
+publish = false
+license = "GPL-3.0-only"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+bamsplit-core = { path = "../crates/bamsplit-core" }
+
+[[bin]]
+name = "bam_header"
+path = "fuzz_targets/bam_header.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "raw_record"
+path = "fuzz_targets/raw_record.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "tags"
+path = "fuzz_targets/tags.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "cigar"
+path = "fuzz_targets/cigar.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "filename"
+path = "fuzz_targets/filename.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "spool"
+path = "fuzz_targets/spool.rs"
+test = false
+doc = false
+bench = false

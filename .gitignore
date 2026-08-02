@@ -1,0 +1,13 @@
+/target
+/fuzz/target
+/fuzz/corpus
+/fuzz/artifacts
+Cargo.lock.bak
+*.profraw
+/tests/data/generated/
+/bench-results/
+.DS_Store
+
+# Artifacts
+INSTRUCTIONS.md
+CHANGELOG.md

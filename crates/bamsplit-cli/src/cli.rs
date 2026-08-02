@@ -19,8 +19,8 @@ use bamsplit_core::bam::header::ReadGroupField;
 use bamsplit_core::engine::{EngineKind, IoBackend};
 use bamsplit_core::index::IndexMode;
 use bamsplit_core::manifest::ManifestFormat;
-use bamsplit_core::routing::chrom::{PlacedUnmapped, UnplacedPolicy};
 use bamsplit_core::routing::MissingPolicy;
+use bamsplit_core::routing::chrom::{PlacedUnmapped, UnplacedPolicy};
 use clap::{Args, Parser, Subcommand, ValueEnum};
 
 /// Lossless, high-performance partitioning of BAM files.
@@ -661,8 +661,10 @@ mod tests {
         Cli::try_parse_from(["bamsplit", "tag", "in.bam", "--field", "sample"])
             .expect("field alone");
         assert!(
-            Cli::try_parse_from(["bamsplit", "tag", "in.bam", "--tag", "RG", "--field", "sample"])
-                .is_err(),
+            Cli::try_parse_from([
+                "bamsplit", "tag", "in.bam", "--tag", "RG", "--field", "sample"
+            ])
+            .is_err(),
             "both must be refused"
         );
     }

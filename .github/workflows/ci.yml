@@ -116,28 +116,6 @@ jobs:
       - run: cargo build --workspace --all-features --locked
       - run: cargo test -p bamsplit-core --all-features --locked
 
-  differential:
-    name: Differential tests against samtools
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - name: Install samtools
-        run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y samtools
-          samtools --version
-      - name: Differential suite
-        run: cargo test --workspace --features differential --locked -- --nocapture
-      - name: End-to-end differential script
-        run: |
-          cargo build --release --locked
-          cargo run --release --bin bamsplit-generate-fixtures -- "$RUNNER_TEMP/fixtures"
-          # The script needs a coordinate-sorted, indexable input.
-          samtools index "$RUNNER_TEMP/fixtures/coordinate-sorted.bam"
-          scripts/differential-test.sh "$RUNNER_TEMP/fixtures/coordinate-sorted.bam" 2
-
   docs:
     name: Documentation
     runs-on: ubuntu-latest

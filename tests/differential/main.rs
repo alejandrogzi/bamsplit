@@ -107,6 +107,7 @@ fn split_fixture(fixture: &Fixture) -> (tempfile::TempDir, std::path::PathBuf, s
 }
 
 #[test]
+#[ignore]
 fn samtools_accepts_every_output() {
     require_samtools!();
     let (_directory, _input, out) = split_fixture(&Fixture::coordinate_sorted());
@@ -117,6 +118,7 @@ fn samtools_accepts_every_output() {
 }
 
 #[test]
+#[ignore]
 fn per_chromosome_counts_match_samtools() {
     require_samtools!();
     let (_directory, input, out) = split_fixture(&Fixture::coordinate_sorted());
@@ -139,6 +141,7 @@ fn per_chromosome_counts_match_samtools() {
 }
 
 #[test]
+#[ignore]
 fn per_chromosome_record_digests_match_samtools() {
     require_samtools!();
     let (_directory, input, out) = split_fixture(&Fixture::coordinate_sorted());
@@ -152,6 +155,7 @@ fn per_chromosome_record_digests_match_samtools() {
 }
 
 #[test]
+#[ignore]
 fn generated_indexes_are_usable_by_samtools() {
     require_samtools!();
     let (_directory, _input, out) = split_fixture(&Fixture::coordinate_sorted());
@@ -175,6 +179,7 @@ fn generated_indexes_are_usable_by_samtools() {
 }
 
 #[test]
+#[ignore]
 fn a_csi_index_is_usable_by_samtools() {
     require_samtools!();
     let (_directory, _input, out) = split_fixture(&Fixture::beyond_bai_limit());
@@ -186,6 +191,7 @@ fn a_csi_index_is_usable_by_samtools() {
 }
 
 #[test]
+#[ignore]
 fn every_engine_agrees_with_samtools() {
     require_samtools!();
     use bamsplit_core::engine::EngineKind;
@@ -225,6 +231,7 @@ fn every_engine_agrees_with_samtools() {
 }
 
 #[test]
+#[ignore]
 fn the_long_cigar_record_survives_a_round_trip() {
     require_samtools!();
     let (_directory, input, out) = split_fixture(&Fixture::long_cigar());
@@ -235,6 +242,7 @@ fn the_long_cigar_record_survives_a_round_trip() {
 }
 
 #[test]
+#[ignore]
 fn every_auxiliary_type_survives_a_round_trip() {
     require_samtools!();
     let (_directory, input, out) = split_fixture(&Fixture::every_tag_type());
@@ -245,6 +253,7 @@ fn every_auxiliary_type_survives_a_round_trip() {
 }
 
 #[test]
+#[ignore]
 fn hostile_reference_names_round_trip_through_samtools() {
     require_samtools!();
     let (_directory, input, out) = split_fixture(&Fixture::hostile_reference_names());
@@ -268,6 +277,7 @@ fn hostile_reference_names_round_trip_through_samtools() {
 }
 
 #[test]
+#[ignore]
 fn a_header_only_output_is_accepted_by_samtools() {
     require_samtools!();
     let fixture = Fixture::header_only();

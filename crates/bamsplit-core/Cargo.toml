@@ -1,0 +1,55 @@
+[package]
+name = "bamsplit-core"
+description = "Core library for bamsplit: lossless BAM partitioning engines, routers, and output management"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[features]
+default = ["mmap", "annotation"]
+# Memory-mapped input support.
+mmap = ["dep:memmap2"]
+# Annotation-driven region routing. Pulls in the `genepred` reader stack and the
+# codecs needed to inspect a compressed annotation's *contents* rather than
+# trusting its file extension.
+annotation = ["dep:genepred", "dep:zstd", "dep:bzip2"]
+
+[dependencies]
+noodles-bam.workspace = true
+noodles-bgzf.workspace = true
+noodles-sam.workspace = true
+noodles-csi.workspace = true
+noodles-core.workspace = true
+
+genepred = { workspace = true, optional = true }
+memmap2 = { workspace = true, optional = true }
+zstd = { workspace = true, optional = true }
+bzip2 = { workspace = true, optional = true }
+
+bstr.workspace = true
+crossbeam-channel.workspace = true
+crc32fast.workspace = true
+csv.workspace = true
+flate2.workspace = true
+indexmap.workspace = true
+percent-encoding.workspace = true
+rayon.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+smallvec.workspace = true
+tempfile.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+xxhash-rust.workspace = true
+
+[dev-dependencies]
+insta.workspace = true
+proptest.workspace = true
+tempfile.workspace = true

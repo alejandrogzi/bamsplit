@@ -1,0 +1,39 @@
+# Copyright (c) 2025 Alejandro Gonzales-Irribarren <alejandrxgzi@gmail.com>
+# Distributed under the terms of the Apache License, Version 2.0.
+#
+# `cargo deny` configuration. Deliberately NOT part of the build or the CI gate:
+# a release must never be blocked by a third-party advisory service being slow,
+# renamed, or offline. Run it on demand:
+#
+#   cargo install cargo-deny
+#   cargo deny check
+
+[graph]
+all-features = true
+
+[advisories]
+yanked = "warn"
+
+[licenses]
+# The repository is GPL-3.0-only, which can incorporate all of these.
+allow = [
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "BSL-1.0",
+    "CC0-1.0",
+    "ISC",
+    "MIT",
+    "MPL-2.0",
+    "Unicode-3.0",
+    "Zlib",
+]
+confidence-threshold = 0.9
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

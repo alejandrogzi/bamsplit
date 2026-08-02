@@ -127,7 +127,7 @@ impl TagRouter {
     /// How many distinct keys have been discovered.
     #[must_use]
     pub fn discovered_keys(&self) -> usize {
-        self.seen.lock().map(|seen| seen.len()).unwrap_or(0)
+        self.seen.lock().map_or(0, |seen| seen.len())
     }
 
     /// Records a key and enforces the cardinality limit.

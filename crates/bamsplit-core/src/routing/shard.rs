@@ -509,7 +509,7 @@ mod tests {
         let first = shard_label(&router, &header, &record(b"a", b"CBZbarcode1\x00"));
         let second = shard_label(&router, &header, &record(b"b", b"CBZbarcode1\x00"));
         assert_eq!(first, second, "the same barcode must share a shard");
-        assert_eq!(first, format!("shard-{:04}", router.shard_of(b"barcode1")),);
+        assert_eq!(first, format!("shard-{:04}", router.shard_of(b"barcode1")));
     }
 
     #[test]

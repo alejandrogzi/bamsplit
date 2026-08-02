@@ -657,7 +657,7 @@ mod tests {
         writer
             .write_raw(b"BAM\x01", &mut |_, _| {})
             .expect("written");
-        for (index, fill) in [b'a', b'b', b'c'].into_iter().enumerate() {
+        for (index, fill) in (*b"abc").into_iter().enumerate() {
             writer
                 .write_record(&record(100, fill), index, &mut |payload, range| {
                     resolved.push((payload, range));

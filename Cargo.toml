@@ -4,7 +4,7 @@ members = ["crates/bamsplit-core", "crates/bamsplit-cli"]
 [workspace.package]
 version = "0.0.1"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.89"
 license = "GPL-3.0-only"
 authors = ["Alejandro Gonzales-Irribarren <alejandrxgzi@gmail.com>"]
 repository = "https://github.com/alejandrogzi/bamsplit"
